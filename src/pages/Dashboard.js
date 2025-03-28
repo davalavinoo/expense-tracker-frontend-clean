@@ -39,7 +39,7 @@ function Dashboard() {
     try {
       const token = localStorage.getItem('token');
       const newExpense = { type, amount: parseFloat(amount), category, date, description };
-      await axios.post('http://localhost:5000/api/expenses', newExpense, {
+      await axios.post('https://expense-tracker-backend-pzfc.onrender.com', newExpense, {
         headers: { 'x-auth-token': token },
       });
       setType('expense');
