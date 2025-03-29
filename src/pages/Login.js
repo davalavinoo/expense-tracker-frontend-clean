@@ -9,12 +9,8 @@ function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    try {
-<<<<<<< HEAD
-      const res = await axios.post('https://expense-tracker-backend-pzfc.onrender.com/api/auth/login', { email, password });
-=======
-      const res = await axios.post('http://localhost:5000/api/auth/login', { email, password });
->>>>>>> 0e8b5880af905708ec34727bb204aef1d314866c
+try {
+	const res = await axios.post('https://expense-tracker-backend-pzfc.onrender.com/api/auth/login', { email, password });
       localStorage.setItem('token', res.data.token);
       navigate('/dashboard');
     } catch (err) {

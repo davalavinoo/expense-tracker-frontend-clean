@@ -17,18 +17,26 @@ function Dashboard() {
   const [recurring, setRecurring] = useState([]);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    fetchExpenses();
-  }, []);
-
+useEffect(() => {
   const fetchExpenses = async () => {
     try {
       const token = localStorage.getItem('token');
-<<<<<<< HEAD
-      const res = await axios.get('https://localhost:5000/api/expensesexpense-tracker-backend-pzfc.onrender.com/api/expenses', {
-=======
-      const res = await axios.get('http://localhost:5000/api/expenses', {
->>>>>>> 0e8b5880af905708ec34727bb204aef1d314866c
+      const res = await axios.get('https://expense-tracker-backend-pzfc.onrender.com/api/expenses', {
+        headers: { 'x-auth-token': token },
+      });
+      setExpenses(res.data);
+      detectRecurring(res.data);
+    } catch (err) {
+      console.error(err.response.data);
+    }
+  };
+  fetchExpenses();
+}, []);
+
+  const fetchExpenses = async () => {
+try {
+  const token = localStorage.getItem('token');
+  const res = await axios.get('https://expense-tracker-backend-pzfc.onrender.com/api/expenses', {
         headers: { 'x-auth-token': token },
       });
       setExpenses(res.data);
@@ -42,14 +50,13 @@ function Dashboard() {
     e.preventDefault();
     try {
       const token = localStorage.getItem('token');
+      if (!token) console.error('No token found');
       const newExpense = { type, amount: parseFloat(amount), category, date, description };
-<<<<<<< HEAD
-      await axios.post('https://expense-tracker-backend-pzfc.onrender.com/api/expenses', newExpense, {
-=======
-      await axios.post('http://localhost:5000/api/expenses', newExpense, {
->>>>>>> 0e8b5880af905708ec34727bb204aef1d314866c
-        headers: { 'x-auth-token': token },
+      console.log('Sending:', newExpense, 'Token:');
+      const res = await axios.post('https://expense-tracker-backend-pzfc.onrender.com/api/expenses', newExpense, {
+      headers: { 'x-auth-token': token },
       });
+      console.log('Response:', res.data);
       setType('expense');
       setAmount('');
       setCategory('');
@@ -57,7 +64,7 @@ function Dashboard() {
       setDescription('');
       fetchExpenses();
     } catch (err) {
-      console.error(err.response.data);
+      console.error('Error:', err.response ? err.response.data : err.message);
     }
   };
 
