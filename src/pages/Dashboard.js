@@ -24,7 +24,11 @@ function Dashboard() {
   const fetchExpenses = async () => {
     try {
       const token = localStorage.getItem('token');
+<<<<<<< HEAD
       const res = await axios.get('https://localhost:5000/api/expensesexpense-tracker-backend-pzfc.onrender.com/api/expenses', {
+=======
+      const res = await axios.get('http://localhost:5000/api/expenses', {
+>>>>>>> 0e8b5880af905708ec34727bb204aef1d314866c
         headers: { 'x-auth-token': token },
       });
       setExpenses(res.data);
@@ -39,7 +43,11 @@ function Dashboard() {
     try {
       const token = localStorage.getItem('token');
       const newExpense = { type, amount: parseFloat(amount), category, date, description };
+<<<<<<< HEAD
       await axios.post('https://expense-tracker-backend-pzfc.onrender.com/api/expenses', newExpense, {
+=======
+      await axios.post('http://localhost:5000/api/expenses', newExpense, {
+>>>>>>> 0e8b5880af905708ec34727bb204aef1d314866c
         headers: { 'x-auth-token': token },
       });
       setType('expense');
