@@ -4,7 +4,6 @@ import { Bar } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
 import { useNavigate } from 'react-router-dom';
 
-// Register Chart.js components
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 function Dashboard() {
@@ -17,44 +16,39 @@ function Dashboard() {
   const [recurring, setRecurring] = useState([]);
   const navigate = useNavigate();
 
-useEffect(() => {
-  const fetchExpenses = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      const res = await axios.get('https://expense-tracker-backend-pzfc.onrender.com/api/expenses', {
-        headers: { 'x-auth-token': token },
-      });
-      setExpenses(res.data);
-      detectRecurring(res.data);
-    } catch (err) {
-      console.error(err.response.data);
-    }
-  };
-  fetchExpenses();
-}, []);
-
-  const fetchExpenses = async () => {
-try {
-  const token = localStorage.getItem('token');
-  const res = await axios.get('https://expense-tracker-backend-pzfc.onrender.com/api/expenses', {
-        headers: { 'x-auth-token': token },
-      });
-      setExpenses(res.data);
-      detectRecurring(res.data);
-    } catch (err) {
-      console.error(err.response.data);
-    }
-  };
+  useEffect(() => {
+    const fetchExpenses = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          navigate('/login');
+          return;
+        }
+        const res = await axios.get('https://expense-tracker-backend-pzfc.onrender.com/api/expenses', {
+          headers: { 'x-auth-token': token },
+        });
+        setExpenses(res.data);
+        detectRecurring(res.data);
+      } catch (err) {
+        console.error('Fetch Error:', err.response ? err.response.data : err.message);
+      }
+    };
+    fetchExpenses();
+  }, [navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       const token = localStorage.getItem('token');
-      if (!token) console.error('No token found');
+      if (!token) {
+        console.error('No token found');
+        navigate('/login');
+        return;
+      }
       const newExpense = { type, amount: parseFloat(amount), category, date, description };
-      console.log('Sending:', newExpense, 'Token:');
+      console.log('Sending:', newExpense, 'Token:', token);
       const res = await axios.post('https://expense-tracker-backend-pzfc.onrender.com/api/expenses', newExpense, {
-      headers: { 'x-auth-token': token },
+        headers: { 'x-auth-token': token },
       });
       console.log('Response:', res.data);
       setType('expense');
@@ -62,9 +56,13 @@ try {
       setCategory('');
       setDate('');
       setDescription('');
-      fetchExpenses();
+      const fetchRes = await axios.get('https://expense-tracker-backend-pzfc.onrender.com/api/expenses', {
+        headers: { 'x-auth-token': token },
+      });
+      setExpenses(fetchRes.data);
+      detectRecurring(fetchRes.data);
     } catch (err) {
-      console.error('Error:', err.response ? err.response.data : err.message);
+      console.error('Submit Error:', err.response ? err.response.data : err.message);
     }
   };
 
@@ -79,8 +77,7 @@ try {
         expenseMap[key] = { ...exp, count: 1, dates: [exp.date] };
       }
     });
-    const recurringItems = Object.values(expenseMap).filter(item => item.count >= 2);
-    setRecurring(recurringItems);
+    setRecurring(Object.values(expenseMap).filter(item => item.count >= 2));
   };
 
   const startVoiceInput = () => {
@@ -105,7 +102,6 @@ try {
     navigate('/login');
   };
 
-  // Chart Data
   const chartData = {
     labels: [...new Set(expenses.filter(exp => exp.type === 'expense').map(exp => exp.category))],
     datasets: [{
@@ -134,8 +130,6 @@ try {
           <h1 className="text-3xl font-bold text-gray-800">Dashboard</h1>
           <button onClick={handleLogout} className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">Logout</button>
         </div>
-
-        {/* Expense Form */}
         <form onSubmit={handleSubmit} className="bg-white p-6 rounded-lg shadow-md mb-6">
           <h2 className="text-xl mb-4 text-center font-semibold">Add Entry</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -143,50 +137,19 @@ try {
               <option value="income">Income</option>
               <option value="expense">Expense</option>
             </select>
-            <input
-              type="number"
-              placeholder="Amount (₹)"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-              step="0.01"
-              required
-            />
-            <input
-              type="text"
-              placeholder="Category"
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            />
-            <input
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            />
-            <input
-              type="text"
-              placeholder="Description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 md:col-span-2"
-            />
+            <input type="number" placeholder="Amount (₹)" value={amount} onChange={(e) => setAmount(e.target.value)} className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500" step="0.01" required />
+            <input type="text" placeholder="Category" value={category} onChange={(e) => setCategory(e.target.value)} className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500" required />
+            <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500" required />
+            <input type="text" placeholder="Description" value={description} onChange={(e) => setDescription(e.target.value)} className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 md:col-span-2" />
           </div>
           <div className="flex gap-4 mt-4">
             <button type="submit" className="flex-1 p-2 bg-blue-500 text-white rounded hover:bg-blue-600">Add</button>
             <button type="button" onClick={startVoiceInput} className="flex-1 p-2 bg-green-500 text-white rounded hover:bg-green-600">Voice Input</button>
           </div>
         </form>
-
-        {/* Chart */}
         <div className="bg-white p-6 rounded-lg shadow-md mb-6">
           <Bar data={chartData} options={chartOptions} />
         </div>
-
-        {/* Recurring Expenses */}
         <div className="bg-white p-6 rounded-lg shadow-md mb-6">
           <h2 className="text-xl mb-4 text-center font-semibold">Recurring Expenses</h2>
           {recurring.length > 0 ? (
@@ -201,8 +164,6 @@ try {
             <p className="text-center text-gray-500">No recurring expenses detected yet.</p>
           )}
         </div>
-
-        {/* Expense List */}
         <ul className="space-y-4">
           {expenses.map(exp => (
             <li key={exp._id} className="bg-white p-4 rounded-lg shadow-md flex justify-between items-center">
