@@ -80,22 +80,78 @@ function Dashboard() {
     setRecurring(Object.values(expenseMap).filter(item => item.count >= 2));
   };
 
-  const startVoiceInput = () => {
-    const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-    recognition.onresult = (event) => {
-      const transcript = event.results[0][0].transcript.toLowerCase();
-      const parts = transcript.split(' ');
-      if (parts.length >= 3) {
-        setType(parts[0] === 'income' ? 'income' : 'expense');
-        setAmount(parts[1]);
-        setCategory(parts[2]);
-        setDate(new Date().toISOString().split('T')[0]);
-        setDescription(parts.slice(3).join(' ') || '');
+const startVoiceInput = () => {
+  const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+  recognition.lang = 'en-US'; // Set language
+  recognition.interimResults = false; // Wait for final result
+  recognition.onresult = async (event) => {
+    const transcript = event.results[0][0].transcript.toLowerCase();
+    console.log('Voice Input:', transcript); // Debug
+    const parts = transcript.split(' ');
+    
+    // Smarter parsing
+    let type = 'expense'; // Default
+    let amount = '';
+    let category = '';
+    let description = '';
+    
+    // Detect type
+    if (parts.includes('income')) {
+      type = 'income';
+      parts.splice(parts.indexOf('income'), 1);
+    } else if (parts.includes('expense')) {
+      parts.splice(parts.indexOf('expense'), 1);
+    }
+    
+    // Find amount (first number)
+    const amountIndex = parts.findIndex(part => !isNaN(parseFloat(part)));
+    if (amountIndex !== -1) {
+      amount = parts[amountIndex];
+      parts.splice(amountIndex, 1);
+    }
+    
+    // Next word is category
+    if (parts.length > 0) {
+      category = parts[0];
+      description = parts.slice(1).join(' ');
+    }
+    
+    // Set state
+    if (amount && category) {
+      setType(type);
+      setAmount(amount);
+      setCategory(category);
+      setDate(new Date().toISOString().split('T')[0]);
+      setDescription(description || '');
+      
+      // Auto-submit
+      const token = localStorage.getItem('token');
+      const newExpense = { type, amount: parseFloat(amount), category, date: new Date().toISOString().split('T')[0], description };
+      try {
+        const res = await axios.post('https://expense-tracker-backend-pzfc.onrender.com/api/expenses', newExpense, {
+          headers: { 'x-auth-token': token },
+        });
+        console.log('Voice Submit:', res.data);
+        setType('expense');
+        setAmount('');
+        setCategory('');
+        setDate('');
+        setDescription('');
+        const fetchRes = await axios.get('https://expense-tracker-backend-pzfc.onrender.com/api/expenses', {
+          headers: { 'x-auth-token': token },
+        });
+        setExpenses(fetchRes.data);
+        detectRecurring(fetchRes.data);
+      } catch (err) {
+        console.error('Voice Error:', err.response ? err.response.data : err.message);
       }
-    };
-    recognition.onerror = (event) => console.error('Voice error:', event.error);
-    recognition.start();
+    } else {
+      console.error('Invalid voice input - missing amount or category');
+    }
   };
+  recognition.onerror = (event) => console.error('Voice error:', event.error);
+  recognition.start();
+};
 
   const handleLogout = () => {
     localStorage.removeItem('token');
