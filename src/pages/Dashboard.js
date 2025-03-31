@@ -65,30 +65,33 @@ function Dashboard() {
     }
   };
 
-  const handleEdit = (exp) => {
-    setEditId(exp._id);
-    setType(exp.type);
-    setAmount(exp.amount.toString());
-    setCategory(exp.category);
-    setDate(exp.date.split('T')[0]);
-    setDescription(exp.description || '');
-  };
+const handleEdit = (exp) => {
+  console.log('Editing:', exp); // Debug
+  setEditId(exp._id);
+  setType(exp.type);
+  setAmount(exp.amount.toString());
+  setCategory(exp.category);
+  setDate(exp.date.split('T')[0]);
+  setDescription(exp.description || '');
+};
 
-  const handleDelete = async (id) => {
-    try {
-      const token = localStorage.getItem('token');
-      await axios.delete(`https://expense-tracker-backend-pzfc.onrender.com/api/expenses/${id}`, {
-        headers: { 'x-auth-token': token },
-      });
-      const fetchRes = await axios.get('https://expense-tracker-backend-pzfc.onrender.com/api/expenses', {
-        headers: { 'x-auth-token': token },
-      });
-      setExpenses(fetchRes.data);
-      detectRecurring(fetchRes.data);
-    } catch (err) {
-      console.error('Delete Error:', err.response ? err.response.data : err.message);
-    }
-  };
+const handleDelete = async (id) => {
+  console.log('Deleting ID:', id); // Debug
+  try {
+    const token = localStorage.getItem('token');
+    const res = await axios.delete(`https://expense-tracker-backend-pzfc.onrender.com/api/expenses/${id}`, {
+      headers: { 'x-auth-token': token },
+    });
+    console.log('Delete Response:', res.data); // Debug
+    const fetchRes = await axios.get('https://expense-tracker-backend-pzfc.onrender.com/api/expenses', {
+      headers: { 'x-auth-token': token },
+    });
+    setExpenses(fetchRes.data);
+    detectRecurring(fetchRes.data);
+  } catch (err) {
+    console.error('Delete Error:', err.response ? err.response.data : err.message);
+  }
+};
 
   const detectRecurring = (data) => {
     const expenseMap = {};
