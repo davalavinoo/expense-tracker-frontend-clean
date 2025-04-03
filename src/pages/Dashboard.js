@@ -22,7 +22,7 @@ function Dashboard() {
       try {
         const token = localStorage.getItem('token');
         if (!token) { navigate('/login'); return; }
-        const res = await axios.get('https://expense-tracker-backend-pzfc.onrender.com/api/expenses', {
+        const res = await axios.get('http://localhost:5000/api/expenses', {
           headers: { 'x-auth-token': token },
         });
         setExpenses(res.data);
@@ -41,12 +41,12 @@ function Dashboard() {
       if (!token) { navigate('/login'); return; }
       const newExpense = { type, amount: parseFloat(amount), category, date, description };
       if (editId) {
-        await axios.put(`https://expense-tracker-backend-pzfc.onrender.com/api/expenses/${editId}`, newExpense, {
+        await axios.put(`http://localhost:5000/api/expenses/${editId}`, newExpense, {
           headers: { 'x-auth-token': token },
         });
         setEditId(null);
       } else {
-        await axios.post('https://expense-tracker-backend-pzfc.onrender.com/api/expenses', newExpense, {
+        await axios.post('http://localhost:5000/api/expenses', newExpense, {
           headers: { 'x-auth-token': token },
         });
       }
@@ -55,7 +55,7 @@ function Dashboard() {
       setCategory('');
       setDate('');
       setDescription('');
-      const fetchRes = await axios.get('https://expense-tracker-backend-pzfc.onrender.com/api/expenses', {
+      const fetchRes = await axios.get('http://localhost:5000/api/expenses', {
         headers: { 'x-auth-token': token },
       });
       setExpenses(fetchRes.data);
@@ -79,11 +79,11 @@ const handleDelete = async (id) => {
   console.log('Deleting ID:', id); // Debug
   try {
     const token = localStorage.getItem('token');
-    const res = await axios.delete(`https://expense-tracker-backend-pzfc.onrender.com/api/expenses/${id}`, {
+    const res = await axios.delete(`http://localhost:5000/api/expenses/${id}`, {
       headers: { 'x-auth-token': token },
     });
     console.log('Delete Response:', res.data); // Debug
-    const fetchRes = await axios.get('https://expense-tracker-backend-pzfc.onrender.com/api/expenses', {
+    const fetchRes = await axios.get('http://localhost:5000/api/expenses', {
       headers: { 'x-auth-token': token },
     });
     setExpenses(fetchRes.data);
@@ -138,11 +138,11 @@ const handleDelete = async (id) => {
         const token = localStorage.getItem('token');
         const newExpense = { type, amount: parseFloat(amount), category, date: new Date().toISOString().split('T')[0], description };
         try {
-          const res = await axios.post('https://expense-tracker-backend-pzfc.onrender.com/api/expenses', newExpense, {
+          const res = await axios.post('http://localhost:5000/api/expenses', newExpense, {
             headers: { 'x-auth-token': token },
           });
           console.log('Voice Submit:', res.data);
-          const fetchRes = await axios.get('https://expense-tracker-backend-pzfc.onrender.com/api/expenses', {
+          const fetchRes = await axios.get('http://localhost:5000/api/expenses', {
             headers: { 'x-auth-token': token },
           });
           setExpenses(fetchRes.data);
